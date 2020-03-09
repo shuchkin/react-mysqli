@@ -14,7 +14,7 @@ composer require shuchkin/react-mysqli
 ```php
 $loop = \React\EventLoop\Factory::create();
 
-$db = \Shuchkin\ReactMySQLi\Client::connect($loop, 'localhost', 'root', '', 'my_db', 3 );
+$db = \Shuchkin\ReactMySQLi\Client::connect($loop, 'localhost', 'root', '', 'my_db' );
 
 // select
 $db->query('SELECT id,name,email FROM user')->then(
