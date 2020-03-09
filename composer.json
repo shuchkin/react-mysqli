@@ -1,0 +1,27 @@
+{
+  "name": "shuchkin/react-mysqli",
+  "description": "Asynchronous & non-blocking MySQL driver for React.PHP",
+  "license": "MIT",
+  "authors": [
+	{
+	  "name": "Sergey Shuchkin (SMSPILOT)",
+	  "email": "sergey.shuchkin@gmail.com",
+	  "homepage": "https://smspilot.ru/"
+	},
+    {
+      "name": "Pavel Kozlov,",
+      "email": "pavel@internet-ufa.ru"
+    }
+
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "ext-mysqlnd": "*",
+    "react/event-loop": "^1.0 || ^0.5",
+    "react/socket": "^1.0 || ^0.8",
+    "react/promise": "^2.2"
+  },
+  "autoload": {
+    "psr-4": {"Shuchkin\\ReactMySQLi\\" : "src/"}
+  }
+}
