@@ -44,7 +44,13 @@ class Client
         $this->loop = $loop;
         $this->pool = $connectionPool;
     }
-    public static function connect( \React\EventLoop\LoopInterface $loop, $host = 'localhost', $db_name = '', $user = 'root', $password = '', $port = 3306, $max_connections = 10 ) {
+    public static function connect( \React\EventLoop\LoopInterface $loop, $host = 'localhost', $user = 'root', $password = '', $db_name = '', $max_connections = 10 ) {
+        $a = explode(':',$host);
+        if ( $a[0] === 'p' ) {
+            array_shift( $a );
+        }
+        $host = array_shift($a);
+        $port = count($a) ? $a[0] : 3306;
 		$pool = new Pool( static function () use ( $host, $port, $db_name, $user, $password ) {
 				return mysqli_connect( $host, $user, $password, $db_name, $port );
 		}, $max_connections );

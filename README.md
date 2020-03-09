@@ -10,53 +10,72 @@ Require [php-mysqlnd](http://php.net/manual/ru/book.mysqlnd.php) extension
 composer require shuchkin/react-mysqli
 ```
 
-## Example
-
+## CONNECTION and SELECT
 ```php
 $loop = \React\EventLoop\Factory::create();
 
-$mysql = \Shuchkin\ReactMySQLi\Client::connect($loop, 'localhost', 'root', '', 'my_db', 3306, 3 );
+$db = \Shuchkin\ReactMySQLi\Client::connect($loop, 'localhost', 'root', '', 'my_db', 3 );
 
 // select
-$mysql->query('select * from user')->then(
+$db->query('SELECT id,name,email FROM user')->then(
     function (\Shuchkin\ReactMySQLi\Result $result) {
         print_r($result->all()); // array
     },
     function ( \Exception $ex ) {
-        error_log( $ex->getMessage() );
+        trigger_error( $ex->getMessage() );
     }
 );
+$loop->run();
+```
+```
+Array
+(
+    [0] => stdClass Object
+        (
+            [id] => 1
+            [name] => Gianni Rodari
+            [email] => gianni.rodari@example.com
+        )
 
-// insert
-$mysql->query("INSERT INTO user SET name='Sergey',email='sergey.shuchkin@gmail.com'")->then(
+    [1] => stdClass Object
+        (
+            [id] => 2
+            [name] => Rikki-Tikki-Tavi
+            [email] => mangoose@example.com
+        )
+
+)
+```
+## INSERT
+```php
+$db->query("INSERT INTO user SET name='Sergey',email='sergey.shuchkin@gmail.com'")->then(
     function (\Shuchkin\ReactMySQLi\Result $result) {
         print_r($result->insert_id); // 12345
     },
     function ( \Exception $ex ) {
-        error_log( $ex->getMessage() );
+        trigger_error( $ex->getMessage() );
     }
 );
-
-// update
-$mysql->query("UPDATE user SET email='sergey@example.com' WHERE id=12345")->then(
+```
+### UPDATE
+```php
+$db->query("UPDATE user SET email='sergey@example.com' WHERE id=12345")->then(
     function (\Shuchkin\ReactMySQLi\Result $result) {
         print_r($result->affected_rows);
     },
     function ( \Exception $ex ) {
-        error_log( $ex->getMessage() );
+        trigger_error( $ex->getMessage() );
     }
 );
-
-// update
-$mysql->query("DELETE FROM user WHERE id=12345")->then(
+```
+### DELETE
+```php
+$db->query('DELETE FROM user WHERE id=12345')->then(
     function (\Shuchkin\ReactMySQLi\Result $result) {
         print_r($result->affected_rows);
     },
     function ( \Exception $ex ) {
-        error_log( $ex->getMessage() );
+        trigger_error( $ex->getMessage() );
     }
 );
-
-
-$loop->run();
 ```

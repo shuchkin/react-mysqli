@@ -24,7 +24,7 @@ class Result
     public function __construct($res, $insert_id, $affected_rows)
     {
         if ($res instanceof \mysqli_result) {
-            while ($row = $res->fetch_assoc()) {
+            while ($row = $res->fetch_object()) {
                 $this->rows[] = $row;
             }
             $res->free();
