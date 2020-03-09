@@ -16,10 +16,9 @@ $loop = \React\EventLoop\Factory::create();
 
 $db = \Shuchkin\ReactMySQLi\Client::connect($loop, 'localhost', 'root', '', 'my_db' );
 
-// select
 $db->query('SELECT id,name,email FROM user')->then(
     function (\Shuchkin\ReactMySQLi\Result $result) {
-        print_r($result->all()); // array
+        print_r( $result->all() );
     },
     function ( \Exception $ex ) {
         trigger_error( $ex->getMessage() );
