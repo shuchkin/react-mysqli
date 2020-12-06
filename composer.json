@@ -20,8 +20,12 @@
     "react/event-loop": "^1.0 || ^0.5",
     "react/socket": "^1.0 || ^0.8",
     "react/promise": "^2.2"
+  }
+  ,
+  "require-dev": {
+    "roave/security-advisories": "dev-master"
   },
   "autoload": {
-    "psr-4": {"Shuchkin\\ReactMySQLi\\" : "src/"}
+    "psr-4": {"Shuchkin\\ReactMySQLi\\" : "src"}
   }
 }

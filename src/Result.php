@@ -1,5 +1,4 @@
 <?php
-
 namespace Shuchkin\ReactMySQLi;
 
 class Result
