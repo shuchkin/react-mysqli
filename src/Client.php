@@ -2,10 +2,19 @@
 
 namespace Shuchkin\ReactMySQLi;
 
+use Exception;
+use mysqli;
+use mysqli_result;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\TimerInterface;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
+use RuntimeException;
+
 class Client
 {
     /**
-     * @var \React\EventLoop\LoopInterface
+     * @var LoopInterface
      */
     private $loop;
 
@@ -15,17 +24,17 @@ class Client
     private $pool;
 
     /**
-     * @var \React\EventLoop\TimerInterface
+     * @var TimerInterface
      */
     private $timer;
 
     /**
-     * @var \React\Promise\Deferred[]
+     * @var Deferred[]
      */
     private $deferred = [];
 
     /**
-     * @var \mysqli[]
+     * @var mysqli[]
      */
     private $conn = [];
 
@@ -36,15 +45,16 @@ class Client
 
 
     /**
-     * @param \React\EventLoop\LoopInterface $loop
+     * @param LoopInterface $loop
      * @param Pool $connectionPool Pool either connection pool or function that makes connection
      */
-    public function __construct( \React\EventLoop\LoopInterface $loop, Pool $connectionPool)
+    public function __construct( LoopInterface $loop, Pool $connectionPool)
     {
         $this->loop = $loop;
         $this->pool = $connectionPool;
     }
-    public static function connect( \React\EventLoop\LoopInterface $loop, $host = 'localhost', $user = 'root', $password = '', $db_name = '', $max_connections = 10 ) {
+    public static function connect( LoopInterface $loop, $host = 'localhost', $user = 'root', $password = '', $db_name = '', $max_connections = 10 )
+    {
         $a = explode(':',$host);
         if ( $a[0] === 'p' ) {
             array_shift( $a );
@@ -60,15 +70,14 @@ class Client
 
     /**
      * @param string
-     * @return \React\Promise\PromiseInterface
+     * @return PromiseInterface
      */
     public function query($query)
     {
-	    /** @noinspection NullPointerExceptionInspection */
-	    return $this->pool->getConnection()->then(function (\mysqli $conn) use ($query) {
+	    return $this->pool->getConnection()->then(function (mysqli $conn) use ($query) {
             try {
 	            $conn->query( $query, MYSQLI_ASYNC );
-            } catch ( \RuntimeException $ex ) {
+            } catch ( RuntimeException $ex ) {
 	            $this->pool->free( $conn );
 
 	            // ???
@@ -78,7 +87,7 @@ class Client
             $id = spl_object_hash($conn);
             $this->conn[$id] = $conn;
             $this->query[$id] = $query;
-            $this->deferred[$id] = $deferred = new \React\Promise\Deferred();
+            $this->deferred[$id] = $deferred = new Deferred();
 
             if (!isset($this->timer)) {
                 $this->timer = $this->loop->addPeriodicTimer(0.001, function () {
@@ -89,7 +98,7 @@ class Client
                     $each = [ 'links' => $links, 'errors' => $errors, 'reject' => $reject ];
                     foreach ($each as $type => $connects) {
                         /**
-                         * @var \mysqli $conn
+                         * @var mysqli $conn
                          */
                         foreach ($connects as $conn) {
                             $id = spl_object_hash($conn);
@@ -98,22 +107,22 @@ class Client
                                 $deferred = $this->deferred[$id];
                                 if ( $type === 'links') {
                                     /**
-                                     * @var \mysqli_result $result
+                                     * @var mysqli_result $result
                                      */
                                     $result = $conn->reap_async_query();
                                     if ($result === false) {
-                                        $deferred->reject(new \Exception($conn->error . '; sql: ' . $this->query[$id]));
+                                        $deferred->reject(new Exception($conn->error . '; sql: ' . $this->query[$id]));
                                     } else {
                                         $deferred->resolve(new Result($result, $conn->insert_id, $conn->affected_rows));
                                     }
                                 }
 
                                 if ($type === 'errors') {
-                                    $deferred->reject(new \Exception($conn->error . '; sql: ' . $this->query[$id]));
+                                    $deferred->reject(new Exception($conn->error . '; sql: ' . $this->query[$id]));
                                 }
 
                                 if ($type === 'reject') {
-                                    $deferred->reject(new \Exception('Query was rejected; sql: ' . $this->query[$id]));
+                                    $deferred->reject(new Exception('Query was rejected; sql: ' . $this->query[$id]));
                                 }
 
                                 unset($this->deferred[$id], $this->conn[$id], $this->query[$id]);
